@@ -3,77 +3,69 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>File-Shrink | Compression Logic Analyzer</title>
-  <meta name="description" content="Analyze text files to find the most frequent words and calculate expected compression ratios using Merge Sort and NumPy — core logic of ZIP files and Huffman Coding." />
+  <title>File-Shrink | Basic Compression Logic</title>
+  <meta name="description" content="Analyze text files to find frequent words and calculate expected compression ratios using Merge Sort and NumPy." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <!-- Animated Background -->
-  <div class="bg-orbs" aria-hidden="true">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-  </div>
+  <!-- Grid background -->
+  <div class="grid-bg" aria-hidden="true"></div>
 
   <!-- Header -->
   <header class="header">
     <div class="header-inner">
       <div class="logo">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-          <rect width="28" height="28" rx="8" fill="url(#grad1)"/>
-          <path d="M7 14 L14 7 L21 14 L14 21 Z" fill="white" opacity="0.9"/>
-          <path d="M11 14 L14 11 L17 14 L14 17 Z" fill="url(#grad1)"/>
-          <defs>
-            <linearGradient id="grad1" x1="0" y1="0" x2="28" y2="28">
-              <stop offset="0%" stop-color="#6366f1"/>
-              <stop offset="100%" stop-color="#8b5cf6"/>
-            </linearGradient>
-          </defs>
-        </svg>
-        <span class="logo-text">File<span class="logo-accent">Shrink</span></span>
+        <div class="logo-mark">
+          <svg viewBox="0 0 14 14" fill="none">
+            <path d="M3 7 L7 3 L11 7 L7 11 Z" fill="white"/>
+          </svg>
+        </div>
+        FileShrink <span>/ compress</span>
       </div>
-      <div class="header-badge">Project 37</div>
+      <div class="header-tag">Project 37</div>
     </div>
   </header>
 
   <main class="main">
-    <!-- Hero Section -->
+    <!-- Hero -->
     <section class="hero">
-      <div class="hero-tag">🗜️ Basic Compression Logic</div>
-      <h1 class="hero-title">Analyze &amp; <span class="gradient-text">Compress</span></h1>
-      <p class="hero-subtitle">
+      <div class="hero-label">Basic Compression Logic</div>
+      <h1>
+        Analyze text files <span class="dim">to build a custom compression dictionary.</span>
+      </h1>
+      <p>
         Upload a text file to discover word frequencies, run Merge Sort,
-        compute NumPy statistics, and calculate your expected compression ratio —
-        the core logic behind ZIP files and Huffman Coding.
+        compute NumPy statistics, and calculate expected compression ratio
+        — the core logic behind ZIP and Huffman Coding.
       </p>
     </section>
 
-    <!-- Upload Section -->
+    <!-- Upload -->
     <section class="upload-section" id="upload-section">
-      <div class="upload-card glass-card" id="drop-zone">
-        <div class="upload-icon" id="upload-icon" aria-hidden="true">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-            <circle cx="24" cy="24" r="24" fill="rgba(99,102,241,0.1)"/>
-            <path d="M24 32V20M24 20L19 25M24 20L29 25" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M14 34h20" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/>
+      <div class="upload-card" id="drop-zone">
+        <div class="upload-icon-wrap" aria-hidden="true">
+          <svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 15V5M11 5L7 9M11 5L15 9"/>
+            <path d="M3 17h16"/>
           </svg>
         </div>
         <p class="upload-title">Drop your <code>.txt</code> file here</p>
         <p class="upload-subtitle">or click to browse</p>
         <input type="file" id="file-input" accept=".txt" aria-label="Upload text file" />
-        <button class="btn-primary" id="browse-btn" type="button">Choose File</button>
+        <div class="upload-actions">
+          <button class="btn btn-primary" id="browse-btn" type="button">Choose File</button>
+        </div>
         <div class="upload-divider"><span>or</span></div>
-        <button class="btn-ghost" id="demo-btn" type="button">
-          ⚡ Run with Sample Text
-        </button>
+        <button class="btn btn-secondary btn-arrow" id="demo-btn" type="button">Run with sample text</button>
       </div>
-      <div class="file-info glass-card hidden" id="file-info">
+
+      <div class="file-info hidden" id="file-info">
         <div class="file-info-row">
           <span class="file-name" id="file-name-label">—</span>
-          <button class="btn-sm-primary" id="analyze-btn" type="button">Analyze →</button>
+          <button class="btn btn-accent btn-sm" id="analyze-btn" type="button">Analyze</button>
         </div>
       </div>
     </section>
@@ -82,168 +74,179 @@
     <section class="loading-section hidden" id="loading-section" aria-live="polite">
       <div class="loader-wrap">
         <div class="spinner"></div>
-        <div class="loading-steps" id="loading-steps">
-          <div class="step active" id="step-1">📖 Tokenizing words…</div>
-          <div class="step" id="step-2">🔀 Running Merge Sort…</div>
-          <div class="step" id="step-3">📊 NumPy analysis…</div>
-          <div class="step" id="step-4">🗜️ Computing ratio…</div>
+        <div class="loading-steps">
+          <div class="step active" id="step-1">01. Tokenizing words</div>
+          <div class="step" id="step-2">02. Running Merge Sort</div>
+          <div class="step" id="step-3">03. NumPy analysis</div>
+          <div class="step" id="step-4">04. Computing ratio</div>
         </div>
       </div>
     </section>
 
     <!-- Error -->
-    <div class="error-card glass-card hidden" id="error-card" role="alert">
-      <span class="error-icon">⚠️</span>
+    <div class="error-card hidden" id="error-card" role="alert">
+      <span class="error-icon">!</span>
       <span id="error-msg">Something went wrong.</span>
-      <button class="btn-ghost-sm" id="dismiss-error">Dismiss</button>
+      <button class="btn btn-secondary btn-sm" id="dismiss-error">Dismiss</button>
     </div>
 
     <!-- Results -->
     <section class="results hidden" id="results">
 
-      <!-- Summary Cards -->
+      <!-- Summary Stats -->
       <div class="stats-row" id="stats-row">
-        <div class="stat-card glass-card">
-          <div class="stat-icon">📝</div>
+        <div class="stat-card">
+          <div class="stat-number">01.</div>
           <div class="stat-value" id="stat-total">—</div>
           <div class="stat-label">Total Words</div>
         </div>
-        <div class="stat-card glass-card">
-          <div class="stat-icon">🔤</div>
+        <div class="stat-card">
+          <div class="stat-number">02.</div>
           <div class="stat-value" id="stat-unique">—</div>
           <div class="stat-label">Unique Words</div>
         </div>
-        <div class="stat-card glass-card">
-          <div class="stat-icon">📏</div>
+        <div class="stat-card">
+          <div class="stat-number">03.</div>
           <div class="stat-value" id="stat-avg-len">—</div>
           <div class="stat-label">Avg Word Length</div>
         </div>
-        <div class="stat-card glass-card">
-          <div class="stat-icon">🗜️</div>
+        <div class="stat-card">
+          <div class="stat-number">04.</div>
           <div class="stat-value accent" id="stat-ratio">—</div>
           <div class="stat-label">Compression Ratio</div>
         </div>
       </div>
 
       <!-- Compression Gauge -->
-      <div class="gauge-section glass-card">
+      <div class="section-card">
         <div class="section-header">
           <h2>Expected Compression Ratio</h2>
-          <span class="section-badge">Top 10 → 1-byte symbols</span>
+          <span class="section-tag">Top 10 → 1-byte symbols</span>
         </div>
-        <div class="gauge-wrap">
-          <div class="gauge-bar-bg">
-            <div class="gauge-bar-fill" id="gauge-fill"></div>
-            <div class="gauge-label" id="gauge-label">0%</div>
+        <div class="section-body">
+          <div class="gauge-wrap">
+            <div class="gauge-bar-bg">
+              <div class="gauge-bar-fill" id="gauge-fill"></div>
+            </div>
+            <div class="gauge-pct" id="gauge-label">0%</div>
+          </div>
+          <div class="gauge-meta">
+            <div class="gauge-meta-item">
+              <span class="meta-label">Original Size</span>
+              <span class="meta-value" id="meta-original">—</span>
+            </div>
+            <div class="gauge-meta-item">
+              <span class="meta-label">Bytes Saved</span>
+              <span class="meta-value accent" id="meta-saved">—</span>
+            </div>
+            <div class="gauge-meta-item">
+              <span class="meta-label">Compressed Size</span>
+              <span class="meta-value" id="meta-compressed">—</span>
+            </div>
+          </div>
+          <div class="gauge-note">
+            <strong>How it works:</strong> Each of the top-10 most frequent words is replaced with a single 1-byte symbol.
+            A word of length <em>L</em> occurring <em>F</em> times saves <code>(L-1) × F</code> bytes.
+            This is the core idea behind Huffman Coding used in ZIP files.
           </div>
         </div>
-        <div class="gauge-meta">
-          <div class="gauge-meta-item">
-            <span class="meta-label">Original Size</span>
-            <span class="meta-value font-mono" id="meta-original">—</span>
-          </div>
-          <div class="gauge-meta-item">
-            <span class="meta-label">Saved Bytes</span>
-            <span class="meta-value font-mono accent" id="meta-saved">—</span>
-          </div>
-          <div class="gauge-meta-item">
-            <span class="meta-label">Compressed Size</span>
-            <span class="meta-value font-mono" id="meta-compressed">—</span>
-          </div>
-        </div>
-        <p class="gauge-note">
-          💡 <strong>How it works:</strong> Each of the top-10 words is replaced with a single 1-byte symbol.
-          A word of length <em>L</em> occurring <em>F</em> times saves <code>(L–1)×F</code> bytes.
-          This is the core idea behind <strong>Huffman Coding</strong> used in ZIP files.
-        </p>
       </div>
 
-      <!-- Top 10 Words Table -->
-      <div class="table-section glass-card">
+      <!-- Top Words Table -->
+      <div class="section-card">
         <div class="section-header">
           <h2>Top 20 Frequent Words</h2>
-          <span class="section-badge">Sorted by Merge Sort ↓</span>
+          <span class="section-tag">Sorted by Merge Sort</span>
         </div>
-        <div class="table-wrap">
-          <table class="results-table" id="words-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Word</th>
-                <th>Frequency</th>
-                <th>% of Total</th>
-                <th>Word Length</th>
-                <th>Bytes Saved (if top-10)</th>
-              </tr>
-            </thead>
-            <tbody id="words-tbody"></tbody>
-          </table>
+        <div class="section-body" style="padding:0;">
+          <div class="table-wrap">
+            <table class="results-table" id="words-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Word</th>
+                  <th>Frequency</th>
+                  <th>% of Total</th>
+                  <th>Length</th>
+                  <th>Bytes Saved</th>
+                </tr>
+              </thead>
+              <tbody id="words-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       <!-- NumPy Stats -->
-      <div class="numpy-section glass-card">
+      <div class="section-card">
         <div class="section-header">
           <h2>NumPy Word Length Analysis</h2>
-          <span class="section-badge">np.array([word lengths])</span>
+          <span class="section-tag">np.array</span>
         </div>
-        <div class="numpy-grid" id="numpy-grid"></div>
-        <div class="code-block" id="numpy-code">
-          <span class="code-comment"># NumPy array of word lengths (top unique words)</span><br/>
-          <span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np<br/>
-          lengths = np.array([<span id="code-lengths">…</span>])<br/>
-          <span class="code-comment"># Stats</span><br/>
-          np.mean(lengths)  <span class="code-comment">→ <span id="code-mean">—</span></span><br/>
-          np.std(lengths)   <span class="code-comment">→ <span id="code-std">—</span></span><br/>
-          np.max(lengths)   <span class="code-comment">→ <span id="code-max">—</span></span><br/>
-          np.min(lengths)   <span class="code-comment">→ <span id="code-min">—</span></span><br/>
+        <div class="section-body">
+          <div class="numpy-grid" id="numpy-grid"></div>
+          <div class="code-block" id="numpy-code">
+            <span class="code-comment"># NumPy array of word lengths</span><br/>
+            <span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np<br/>
+            lengths = np.array([<span id="code-lengths">...</span>])<br/>
+            <br/>
+            <span class="code-comment"># Statistics</span><br/>
+            np.mean(lengths)  <span class="code-comment">→ <span id="code-mean">—</span></span><br/>
+            np.std(lengths)   <span class="code-comment">→ <span id="code-std">—</span></span><br/>
+            np.max(lengths)   <span class="code-comment">→ <span id="code-max">—</span></span><br/>
+            np.min(lengths)   <span class="code-comment">→ <span id="code-min">—</span></span><br/>
+          </div>
         </div>
       </div>
 
       <!-- Frequency Bar Chart -->
-      <div class="chart-section glass-card">
+      <div class="section-card">
         <div class="section-header">
           <h2>Frequency Distribution</h2>
-          <span class="section-badge">Top 10 Words</span>
+          <span class="section-tag">Top 10 Words</span>
         </div>
-        <div class="bar-chart" id="bar-chart"></div>
+        <div class="section-body">
+          <div class="bar-chart" id="bar-chart"></div>
+        </div>
       </div>
 
-      <!-- Real World -->
-      <div class="realworld-section glass-card">
+      <!-- Real World Application -->
+      <div class="section-card">
         <div class="section-header">
           <h2>Real-World Application</h2>
-          <span class="section-badge">ZIP • Huffman • LZ77</span>
+          <span class="section-tag">Compression Algorithms</span>
         </div>
-        <div class="rw-grid">
-          <div class="rw-card">
-            <div class="rw-icon">🗃️</div>
-            <h3>ZIP / DEFLATE</h3>
-            <p>Uses LZ77 + Huffman coding. Frequent byte patterns are replaced with shorter codes — exactly what File-Shrink simulates at the word level.</p>
-          </div>
-          <div class="rw-card">
-            <div class="rw-icon">🌳</div>
-            <h3>Huffman Coding</h3>
-            <p>Assigns shorter bit sequences to more frequent symbols. The compression ratio you see is a simplified Huffman estimate for frequent words.</p>
-          </div>
-          <div class="rw-card">
-            <div class="rw-icon">📚</div>
-            <h3>Dictionary Compression</h3>
-            <p>Custom compression dictionaries (like in Brotli) map frequent strings to tokens. File-Shrink builds exactly that dictionary from your file.</p>
+        <div class="section-body" style="padding:0;">
+          <div class="rw-grid">
+            <div class="rw-card">
+              <div class="rw-number">01.</div>
+              <h3>ZIP / DEFLATE</h3>
+              <p>Uses LZ77 and Huffman coding. Frequent byte patterns are replaced with shorter codes — exactly what File-Shrink simulates at the word level.</p>
+            </div>
+            <div class="rw-card">
+              <div class="rw-number">02.</div>
+              <h3>Huffman Coding</h3>
+              <p>Assigns shorter bit sequences to more frequent symbols. The compression ratio above is a simplified Huffman estimate for the most frequent words.</p>
+            </div>
+            <div class="rw-card">
+              <div class="rw-number">03.</div>
+              <h3>Dictionary Compression</h3>
+              <p>Custom compression dictionaries map frequent strings to tokens. File-Shrink builds exactly that dictionary from your uploaded file.</p>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Reset -->
       <div class="reset-wrap">
-        <button class="btn-ghost" id="reset-btn" type="button">↩ Analyze Another File</button>
+        <button class="btn btn-secondary btn-arrow" id="reset-btn" type="button">Analyze another file</button>
       </div>
 
     </section>
   </main>
 
   <footer class="footer">
-    <p>Project 37 · "File-Shrink" Basic Compression Logic &nbsp;·&nbsp; Python + Merge Sort + NumPy</p>
+    Project 37 · File-Shrink · Python + Merge Sort + NumPy
   </footer>
 
   <script src="/static/script.js"></script>

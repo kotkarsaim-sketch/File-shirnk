@@ -1,12 +1,10 @@
 /* =====================================================
-   File-Shrink — Frontend Logic
+   File-Shrink — Frontend Logic (no emojis)
    ===================================================== */
 
-// ── State ──
 let selectedFile = null;
 let analysisData = null;
 
-// ── DOM References ──
 const dropZone       = document.getElementById('drop-zone');
 const fileInput      = document.getElementById('file-input');
 const browseBtn      = document.getElementById('browse-btn');
@@ -22,75 +20,63 @@ const results        = document.getElementById('results');
 const resetBtn       = document.getElementById('reset-btn');
 const uploadSection  = document.getElementById('upload-section');
 
-// ── File Picking ──
+/* ── File Picking ── */
 browseBtn.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('click', (e) => {
-  if (e.target === dropZone || e.target.closest('.upload-card') && !e.target.closest('button')) {
-    fileInput.click();
-  }
+  if (!e.target.closest('button')) fileInput.click();
 });
 
 fileInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (file) setFile(file);
+  if (e.target.files[0]) setFile(e.target.files[0]);
 });
 
-// ── Drag & Drop ──
-dropZone.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  dropZone.classList.add('drag-over');
-});
+/* ── Drag & Drop ── */
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
 dropZone.addEventListener('drop', (e) => {
   e.preventDefault();
   dropZone.classList.remove('drag-over');
   const file = e.dataTransfer.files[0];
   if (file) {
-    if (!file.name.endsWith('.txt')) {
-      showError('Only .txt files are supported. Please drop a plain text file.');
-      return;
-    }
+    if (!file.name.endsWith('.txt')) { showError('Only .txt files are supported.'); return; }
     setFile(file);
   }
 });
 
 function setFile(file) {
   selectedFile = file;
-  fileNameLabel.textContent = `📄 ${file.name}  (${formatBytes(file.size)})`;
+  fileNameLabel.textContent = file.name + '  (' + formatBytes(file.size) + ')';
   fileInfo.classList.remove('hidden');
   hideError();
 }
 
-// ── Demo Mode ──
+/* ── Demo Mode ── */
 demoBtn.addEventListener('click', async () => {
   try {
     const res = await fetch('/sample');
     const data = await res.json();
     const blob = new Blob([data.text], { type: 'text/plain' });
     selectedFile = new File([blob], 'sample_text.txt', { type: 'text/plain' });
-    fileNameLabel.textContent = `📄 sample_text.txt  (demo)`;
+    fileNameLabel.textContent = 'sample_text.txt  (demo)';
     fileInfo.classList.remove('hidden');
     hideError();
-    // Auto analyze
     await runAnalysis();
   } catch {
-    showError('Could not load sample text. Please upload your own .txt file.');
+    showError('Could not load sample text.');
   }
 });
 
-// ── Analyze ──
+/* ── Analyze ── */
 analyzeBtn.addEventListener('click', runAnalysis);
 
 async function runAnalysis() {
   if (!selectedFile) return;
 
-  // Show loading
   uploadSection.classList.add('hidden');
   results.classList.add('hidden');
   loadingSection.classList.remove('hidden');
   hideError();
 
-  // Animate loading steps
   const steps = ['step-1', 'step-2', 'step-3', 'step-4'];
   let stepIdx = 0;
   const stepInterval = setInterval(() => {
@@ -101,42 +87,33 @@ async function runAnalysis() {
     if (stepIdx < steps.length) {
       document.getElementById(steps[stepIdx]).classList.add('active');
       stepIdx++;
-    } else {
-      clearInterval(stepInterval);
-    }
+    } else { clearInterval(stepInterval); }
   }, 500);
 
   const formData = new FormData();
   formData.append('file', selectedFile);
 
   try {
-    const res = await fetch('/analyze', {
-      method: 'POST',
-      body: formData
-    });
+    const res = await fetch('/analyze', { method: 'POST', body: formData });
     const data = await res.json();
 
     clearInterval(stepInterval);
-    // Mark all steps done
     steps.forEach(id => {
-      const el = document.getElementById(id);
-      el.classList.remove('active');
-      el.classList.add('done');
+      document.getElementById(id).classList.remove('active');
+      document.getElementById(id).classList.add('done');
     });
-
     await delay(400);
     loadingSection.classList.add('hidden');
 
     if (!res.ok || data.error) {
-      showError(data.error || 'Analysis failed. Please try again.');
+      showError(data.error || 'Analysis failed.');
       uploadSection.classList.remove('hidden');
       return;
     }
 
     analysisData = data;
     renderResults(data);
-
-  } catch (err) {
+  } catch {
     clearInterval(stepInterval);
     loadingSection.classList.add('hidden');
     uploadSection.classList.remove('hidden');
@@ -144,13 +121,12 @@ async function runAnalysis() {
   }
 }
 
-// ── Render Results ──
+/* ── Render ── */
 function renderResults(data) {
-  // Summary stats
-  document.getElementById('stat-total').textContent    = data.total_words.toLocaleString();
-  document.getElementById('stat-unique').textContent   = data.unique_words.toLocaleString();
-  document.getElementById('stat-avg-len').textContent  = data.numpy_stats.mean;
-  document.getElementById('stat-ratio').textContent    = data.compression.compression_ratio_percent + '%';
+  document.getElementById('stat-total').textContent   = data.total_words.toLocaleString();
+  document.getElementById('stat-unique').textContent  = data.unique_words.toLocaleString();
+  document.getElementById('stat-avg-len').textContent = data.numpy_stats.mean;
+  document.getElementById('stat-ratio').textContent   = data.compression.compression_ratio_percent + '%';
 
   // Gauge
   const ratio = data.compression.compression_ratio_percent;
@@ -175,38 +151,36 @@ function renderResults(data) {
 
     const tr = document.createElement('tr');
     if (isTop10) tr.classList.add('highlight-row');
-    tr.innerHTML = `
-      <td class="rank-cell">${item.rank}</td>
-      <td class="word-cell">${escHtml(item.word)}${isTop10 ? '<span class="top-badge">TOP 10</span>' : ''}</td>
-      <td class="freq-cell">${item.frequency.toLocaleString()}</td>
-      <td>${item.percent}%</td>
-      <td>${item.word.length} chars</td>
-      <td class="saved-cell">${isTop10 ? '−' + formatBytes(bytesSaved) : '—'}</td>
-    `;
+    tr.innerHTML =
+      '<td class="rank-cell">' + item.rank + '</td>' +
+      '<td class="word-cell">' + escHtml(item.word) + (isTop10 ? '<span class="top-badge">TOP 10</span>' : '') + '</td>' +
+      '<td class="freq-cell">' + item.frequency.toLocaleString() + '</td>' +
+      '<td>' + item.percent + '%</td>' +
+      '<td>' + item.word.length + '</td>' +
+      '<td class="saved-cell">' + (isTop10 ? '-' + formatBytes(bytesSaved) : '—') + '</td>';
     tbody.appendChild(tr);
   });
 
-  // NumPy stats grid
+  // NumPy grid
   const stats = data.numpy_stats;
   const numpyGrid = document.getElementById('numpy-grid');
   numpyGrid.innerHTML = '';
-  const numpyItems = [
+  [
     { label: 'Mean Length', value: stats.mean },
     { label: 'Std Dev',     value: stats.std },
     { label: 'Max Length',  value: stats.max },
     { label: 'Min Length',  value: stats.min },
     { label: 'Unique Words',value: stats.total_unique },
-  ];
-  numpyItems.forEach(item => {
+  ].forEach(item => {
     const div = document.createElement('div');
     div.className = 'numpy-stat';
-    div.innerHTML = `<div class="n-value">${item.value}</div><div class="n-label">${item.label}</div>`;
+    div.innerHTML = '<div class="n-value">' + item.value + '</div><div class="n-label">' + item.label + '</div>';
     numpyGrid.appendChild(div);
   });
 
   // Code block
   const lengthSample = data.all_top_20.slice(0, 10).map(x => x.word.length).join(', ');
-  document.getElementById('code-lengths').textContent = lengthSample + ', …';
+  document.getElementById('code-lengths').textContent = lengthSample + ', ...';
   document.getElementById('code-mean').textContent    = stats.mean;
   document.getElementById('code-std').textContent     = stats.std;
   document.getElementById('code-max').textContent     = stats.max;
@@ -221,18 +195,11 @@ function renderResults(data) {
     const pct = Math.round((item.frequency / maxFreq) * 100);
     const div = document.createElement('div');
     div.className = 'bar-item';
-    div.innerHTML = `
-      <div class="bar-word">${escHtml(item.word)}</div>
-      <div class="bar-track">
-        <div class="bar-fill" data-pct="${pct}">
-          <span class="bar-val">${item.frequency}</span>
-        </div>
-      </div>
-    `;
+    div.innerHTML =
+      '<div class="bar-word">' + escHtml(item.word) + '</div>' +
+      '<div class="bar-track"><div class="bar-fill" data-pct="' + pct + '"><span class="bar-val">' + item.frequency + '</span></div></div>';
     barChart.appendChild(div);
   });
-
-  // Animate bars
   setTimeout(() => {
     document.querySelectorAll('.bar-fill').forEach(bar => {
       bar.style.width = bar.dataset.pct + '%';
@@ -240,12 +207,11 @@ function renderResults(data) {
     });
   }, 150);
 
-  // Show results
   results.classList.remove('hidden');
   results.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// ── Reset ──
+/* ── Reset ── */
 resetBtn.addEventListener('click', () => {
   selectedFile = null;
   analysisData = null;
@@ -254,28 +220,20 @@ resetBtn.addEventListener('click', () => {
   results.classList.add('hidden');
   uploadSection.classList.remove('hidden');
   hideError();
-  // Reset loading steps
   ['step-1','step-2','step-3','step-4'].forEach(id => {
-    const el = document.getElementById(id);
-    el.classList.remove('active', 'done');
+    document.getElementById(id).classList.remove('active', 'done');
   });
   document.getElementById('step-1').classList.add('active');
-  // Reset gauge
   document.getElementById('gauge-fill').style.width = '0%';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// ── Error Handling ──
-function showError(msg) {
-  errorMsg.textContent = msg;
-  errorCard.classList.remove('hidden');
-}
-function hideError() {
-  errorCard.classList.add('hidden');
-}
+/* ── Error ── */
+function showError(msg) { errorMsg.textContent = msg; errorCard.classList.remove('hidden'); }
+function hideError() { errorCard.classList.add('hidden'); }
 dismissError.addEventListener('click', hideError);
 
-// ── Utilities ──
+/* ── Utilities ── */
 function formatBytes(bytes) {
   if (bytes === 0) return '0 B';
   if (bytes < 1024) return bytes + ' B';
@@ -287,6 +245,4 @@ function escHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function delay(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
