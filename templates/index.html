@@ -11,13 +11,14 @@
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <!-- Grid background -->
+  <!-- Background layers -->
   <div class="grid-bg" aria-hidden="true"></div>
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
 
   <!-- Header -->
-  <header class="header">
+  <header class="header" id="header">
     <div class="header-inner">
-      <div class="logo">
+      <div class="logo" id="logo">
         <div class="logo-mark">
           <svg viewBox="0 0 14 14" fill="none">
             <path d="M3 7 L7 3 L11 7 L7 11 Z" fill="white"/>
@@ -25,16 +26,16 @@
         </div>
         FileShrink <span>/ compress</span>
       </div>
-      <div class="header-tag">Project 37</div>
+      <div class="header-tag tooltip" data-tip="PLDP Mini Project">Project 37</div>
     </div>
   </header>
 
   <main class="main">
     <!-- Hero -->
-    <section class="hero">
+    <section class="hero reveal">
       <div class="hero-label">Basic Compression Logic</div>
       <h1>
-        Analyze text files <span class="dim">to build a custom compression dictionary.</span>
+        <span class="gradient-text">Analyze text files</span> <span class="dim">to build a custom compression dictionary.</span>
       </h1>
       <p>
         Upload a text file to discover word frequencies, run Merge Sort,
@@ -44,8 +45,9 @@
     </section>
 
     <!-- Upload -->
-    <section class="upload-section" id="upload-section">
+    <section class="upload-section reveal reveal-delay-1" id="upload-section">
       <div class="upload-card" id="drop-zone">
+        <div class="shimmer-line"></div>
         <div class="upload-icon-wrap" aria-hidden="true">
           <svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 15V5M11 5L7 9M11 5L15 9"/>
@@ -59,7 +61,7 @@
           <button class="btn btn-primary" id="browse-btn" type="button">Choose File</button>
         </div>
         <div class="upload-divider"><span>or</span></div>
-        <button class="btn btn-secondary btn-arrow" id="demo-btn" type="button">Run with sample text</button>
+        <button class="btn btn-secondary btn-arrow" id="demo-btn" type="button">Run with sample text <span class="arrow">&gt;</span></button>
       </div>
 
       <div class="file-info hidden" id="file-info">
@@ -93,24 +95,24 @@
     <!-- Results -->
     <section class="results hidden" id="results">
 
-      <!-- Summary Stats -->
-      <div class="stats-row" id="stats-row">
-        <div class="stat-card">
+      <!-- Stats -->
+      <div class="stats-row reveal-scale" id="stats-row">
+        <div class="stat-card tooltip" data-tip="All word tokens in the file">
           <div class="stat-number">01.</div>
           <div class="stat-value" id="stat-total">—</div>
           <div class="stat-label">Total Words</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card tooltip" data-tip="Distinct words found">
           <div class="stat-number">02.</div>
           <div class="stat-value" id="stat-unique">—</div>
           <div class="stat-label">Unique Words</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card tooltip" data-tip="Average characters per word (NumPy)">
           <div class="stat-number">03.</div>
           <div class="stat-value" id="stat-avg-len">—</div>
           <div class="stat-label">Avg Word Length</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card tooltip" data-tip="Bytes saved / total bytes">
           <div class="stat-number">04.</div>
           <div class="stat-value accent" id="stat-ratio">—</div>
           <div class="stat-label">Compression Ratio</div>
@@ -118,10 +120,11 @@
       </div>
 
       <!-- Compression Gauge -->
-      <div class="section-card">
+      <div class="section-card reveal reveal-delay-1">
+        <div class="shimmer-line"></div>
         <div class="section-header">
           <h2>Expected Compression Ratio</h2>
-          <span class="section-tag">Top 10 → 1-byte symbols</span>
+          <span class="section-tag">Top 10 &rarr; 1-byte symbols</span>
         </div>
         <div class="section-body">
           <div class="gauge-wrap">
@@ -146,14 +149,15 @@
           </div>
           <div class="gauge-note">
             <strong>How it works:</strong> Each of the top-10 most frequent words is replaced with a single 1-byte symbol.
-            A word of length <em>L</em> occurring <em>F</em> times saves <code>(L-1) × F</code> bytes.
+            A word of length <em>L</em> occurring <em>F</em> times saves <code>(L-1) x F</code> bytes.
             This is the core idea behind Huffman Coding used in ZIP files.
           </div>
         </div>
       </div>
 
-      <!-- Top Words Table -->
-      <div class="section-card">
+      <!-- Word Table -->
+      <div class="section-card reveal reveal-delay-2">
+        <div class="shimmer-line"></div>
         <div class="section-header">
           <h2>Top 20 Frequent Words</h2>
           <span class="section-tag">Sorted by Merge Sort</span>
@@ -177,8 +181,9 @@
         </div>
       </div>
 
-      <!-- NumPy Stats -->
-      <div class="section-card">
+      <!-- NumPy -->
+      <div class="section-card reveal reveal-delay-1">
+        <div class="shimmer-line"></div>
         <div class="section-header">
           <h2>NumPy Word Length Analysis</h2>
           <span class="section-tag">np.array</span>
@@ -191,16 +196,17 @@
             lengths = np.array([<span id="code-lengths">...</span>])<br/>
             <br/>
             <span class="code-comment"># Statistics</span><br/>
-            np.mean(lengths)  <span class="code-comment">→ <span id="code-mean">—</span></span><br/>
-            np.std(lengths)   <span class="code-comment">→ <span id="code-std">—</span></span><br/>
-            np.max(lengths)   <span class="code-comment">→ <span id="code-max">—</span></span><br/>
-            np.min(lengths)   <span class="code-comment">→ <span id="code-min">—</span></span><br/>
+            np.mean(lengths)  <span class="code-comment">&rarr; <span id="code-mean">—</span></span><br/>
+            np.std(lengths)   <span class="code-comment">&rarr; <span id="code-std">—</span></span><br/>
+            np.max(lengths)   <span class="code-comment">&rarr; <span id="code-max">—</span></span><br/>
+            np.min(lengths)   <span class="code-comment">&rarr; <span id="code-min">—</span></span><br/>
           </div>
         </div>
       </div>
 
-      <!-- Frequency Bar Chart -->
-      <div class="section-card">
+      <!-- Bar Chart -->
+      <div class="section-card reveal reveal-delay-2">
+        <div class="shimmer-line"></div>
         <div class="section-header">
           <h2>Frequency Distribution</h2>
           <span class="section-tag">Top 10 Words</span>
@@ -210,8 +216,9 @@
         </div>
       </div>
 
-      <!-- Real World Application -->
-      <div class="section-card">
+      <!-- Real World -->
+      <div class="section-card reveal reveal-delay-3">
+        <div class="shimmer-line"></div>
         <div class="section-header">
           <h2>Real-World Application</h2>
           <span class="section-tag">Compression Algorithms</span>
@@ -238,15 +245,15 @@
       </div>
 
       <!-- Reset -->
-      <div class="reset-wrap">
-        <button class="btn btn-secondary btn-arrow" id="reset-btn" type="button">Analyze another file</button>
+      <div class="reset-wrap reveal reveal-delay-4">
+        <button class="btn btn-secondary btn-arrow" id="reset-btn" type="button">Analyze another file <span class="arrow">&gt;</span></button>
       </div>
 
     </section>
   </main>
 
   <footer class="footer">
-    Project 37 · File-Shrink · Python + Merge Sort + NumPy
+    Project 37 &middot; File-Shrink &middot; Python + Merge Sort + NumPy
   </footer>
 
   <script src="/static/script.js"></script>
